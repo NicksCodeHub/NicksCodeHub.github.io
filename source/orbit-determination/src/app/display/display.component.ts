@@ -1,6 +1,7 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { PlanetRenderer } from './planetRenderer';
 
 @Component({
   selector: 'app-display',
@@ -15,17 +16,16 @@ export class DisplayComponent {
   camera = null;
   controls = null;
 
-  mesh1 = null;
-  mesh2 = null;
+  earth:PlanetRenderer = null;
 
   mouseDown = false;
 
   constructor() { 
     this.scene = new THREE.Scene();
 
-    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, .1, 1000);
-    this.camera.position.z = 30;
-    this.camera.position.y = 30;
+    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, .1, 100000);
+    this.camera.position.z = 15000;
+    this.camera.position.y = 1000;
     this.camera.lookAt(new THREE.Vector3(0,0,0));
 
     this.controls = new OrbitControls( this.camera, this.renderer.domElement );
@@ -35,20 +35,10 @@ export class DisplayComponent {
     this.controls.enablePan = false;
     this.controls.screenSpacePanning = false;
     this.controls.minDistance = 15;
-    this.controls.maxDistance = 500;
+    this.controls.maxDistance = 50000;
     
-
-    let geometry = new THREE.SphereGeometry(1,15,15);
-    const material1 = new THREE.MeshBasicMaterial({color: 0x2099aa, wireframe: false});
-    this.mesh1 = new THREE.Mesh(geometry, material1);
-
-    geometry = new THREE.SphereGeometry(1,15,15);
-    const material2 = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
-    this.mesh2 = new THREE.Mesh(geometry, material2);
-
-
-    this.scene.add(this.mesh1);
-    this.scene.add(this.mesh2);
+    this.earth = new PlanetRenderer();
+    this.earth.addToScene(this.scene);
   }
 
   ngAfterViewInit() {
@@ -61,9 +51,8 @@ export class DisplayComponent {
       window.requestAnimationFrame(() => this.animate());
 
       this.controls.update();
-
-      this.mesh1.rotation.y += 0.01;
-      this.mesh2.rotation.y += 0.01;
+      this.earth.update();
+      
       this.renderer.render(this.scene, this.camera);
   }
 
