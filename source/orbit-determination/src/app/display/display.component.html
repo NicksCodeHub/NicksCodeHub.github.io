@@ -1,1 +1,7 @@
-<div #rendererContainer (window:resize)="onWindowResize()"></div>
+<div #rendererContainer 
+        (window:resize)=        "onWindowResize()" 
+        (mousewheel)=           "onMouseWheel($event)"
+        (mousedown)=            "onMouseDown($event)"
+        (mouseup)=              "onMouseUp($event)"
+        (document:mousemove)=   "onMouseMove($event)">
+</div>
