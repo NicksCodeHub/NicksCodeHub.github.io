@@ -2,6 +2,7 @@ import { Component, ViewChild, ElementRef } from '@angular/core';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { PlanetRenderer } from './planetRenderer';
+import { DisplayProperties } from './displayProperties';
 
 @Component({
   selector: 'app-display',
@@ -20,6 +21,8 @@ export class DisplayComponent {
 
   mouseDown = false;
 
+  globals = new DisplayProperties();
+
   constructor() { 
     this.scene = new THREE.Scene();
 
@@ -37,8 +40,20 @@ export class DisplayComponent {
     this.controls.minDistance = 15;
     this.controls.maxDistance = 50000;
     
-    this.earth = new PlanetRenderer();
+    this.earth = new PlanetRenderer(this.globals);
     this.earth.addToScene(this.scene);
+
+    let ambiantLight = new THREE.AmbientLight( 0x202020 ); // soft white light
+    this.scene.add(ambiantLight);
+
+    let sun = new THREE.PointLight(0xffffff, 1);
+    console.log(sun.distance);
+    console.log(sun.decay);
+    sun.position.z = 149040000;
+    
+    this.scene.add(sun);
+    
+
   }
 
   ngAfterViewInit() {
