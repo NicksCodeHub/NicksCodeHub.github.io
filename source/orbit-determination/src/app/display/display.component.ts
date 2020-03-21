@@ -33,8 +33,8 @@ export class DisplayComponent {
     this.mesh2 = new THREE.Mesh(geometry, material2);
 
 
-    this.scene.add(this.mesh1);    
-    this.scene.add(this.mesh2);    
+    this.scene.add(this.mesh1);
+    this.scene.add(this.mesh2);
   }
 
   ngAfterViewInit() {
@@ -51,4 +51,9 @@ export class DisplayComponent {
       this.renderer.render(this.scene, this.camera);
   }
 
+  onWindowResize() {
+    this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+  }
 }
