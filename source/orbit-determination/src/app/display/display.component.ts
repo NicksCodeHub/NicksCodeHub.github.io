@@ -37,13 +37,13 @@ export class DisplayComponent {
 
     this.controls.enablePan = false;
     this.controls.screenSpacePanning = false;
-    this.controls.minDistance = 15;
+    this.controls.minDistance = 10000;
     this.controls.maxDistance = 50000;
     
     this.earth = new PlanetRenderer(this.globals);
     this.earth.addToScene(this.scene);
 
-    let ambiantLight = new THREE.AmbientLight( 0x202020 ); // soft white light
+    let ambiantLight = new THREE.AmbientLight( 0x707070 ); // soft white light
     this.scene.add(ambiantLight);
 
     let sun = new THREE.PointLight(0xffffff, 1);
@@ -85,7 +85,25 @@ export class DisplayComponent {
   }
 
   onMouseDown(e) {
-    this.mouseDown = true;
+    // Create a line pointing out of the origin
+    /*let matLine = new THREE.LineBasicMaterial( {
+
+        color: 0x0ff000,
+        linewidth: 500
+
+    } );
+
+    let line:THREE.Line;
+    let line_geometry = new THREE.Geometry();
+    line_geometry.vertices.push(new THREE.Vector3(0,0,0));
+    console.log(this.earth.pointToLongitude(90));
+    line_geometry.vertices.push(this.earth.pointToLongitude(90).setLength(7000));
+
+    line = new THREE.Line(line_geometry, matLine);
+
+    this.scene.add(line);*/
+
+    this.earth.toggleMeridians(this.scene);
   }
   
   onMouseMove(e) {
