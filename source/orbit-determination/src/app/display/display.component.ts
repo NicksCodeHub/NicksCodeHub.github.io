@@ -2,6 +2,7 @@ import { Component, ViewChild, ElementRef } from '@angular/core';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { PlanetRenderer } from './planetRenderer';
+import { OrbitRenderer } from './orbitRenderer';
 import { DisplayProperties } from './displayProperties';
 
 @Component({
@@ -18,17 +19,20 @@ export class DisplayComponent {
   controls = null;
 
   earth:PlanetRenderer = null;
+  orbit1:OrbitRenderer = null;
 
   mouseDown = false;
 
-  globals = new DisplayProperties();
+  private globals = new DisplayProperties();
+  private clock = new THREE.Clock();
 
   constructor() { 
     this.scene = new THREE.Scene();
 
     this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, .1, 100000);
-    this.camera.position.z = 15000;
-    this.camera.position.y = 1000;
+    this.camera.up = new THREE.Vector3(0,0,1);
+    this.camera.position.x = 15000;
+    this.camera.position.z = 1000;
     this.camera.lookAt(new THREE.Vector3(0,0,0));
 
     this.controls = new OrbitControls( this.camera, this.renderer.domElement );
@@ -43,13 +47,14 @@ export class DisplayComponent {
     this.earth = new PlanetRenderer(this.globals);
     this.earth.addToScene(this.scene);
 
+    this.orbit1 = new OrbitRenderer(this.globals);
+    this.orbit1.addToScene(this.scene);
+
     let ambiantLight = new THREE.AmbientLight( 0x707070 ); // soft white light
     this.scene.add(ambiantLight);
 
     let sun = new THREE.PointLight(0xffffff, 1);
-    console.log(sun.distance);
-    console.log(sun.decay);
-    sun.position.z = 149040000;
+    sun.position.x = 149040000;
     
     this.scene.add(sun);
     
@@ -65,6 +70,7 @@ export class DisplayComponent {
   animate() {
       window.requestAnimationFrame(() => this.animate());
 
+      this.globals.delta_Time = this.clock.getDelta();
       this.controls.update();
       this.earth.update();
       
@@ -103,7 +109,7 @@ export class DisplayComponent {
 
     this.scene.add(line);*/
 
-    this.earth.toggleMeridians(this.scene);
+    //this.earth.toggleMeridians(this.scene);
   }
   
   onMouseMove(e) {

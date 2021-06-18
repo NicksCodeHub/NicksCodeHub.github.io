@@ -6,56 +6,44 @@ import { DisplayProperties } from './displayProperties';
 export class PlanetRenderer {
     public planet: Planet = null;
 
-    public color: Color;
-
     private mesh:THREE.Mesh = null;
     private meridians:THREE.Line = null;
+    // Three axes, x, y, and z
+    private axes:THREE.ArrowHelper[] = new Array(3);
 
     private precision:number = 24;
-    private clock = new THREE.Clock();
     private globals:DisplayProperties;
 
 
     constructor(globals:DisplayProperties) {
         this.globals = globals;
-        this.planet = new Planet("Earth", 6371, 86400, 23*(2*Math.PI)/360);
-        this.color = new Color(0x009933);
-
-
-        let geometry = new THREE.SphereGeometry(this.planet.radius, this.precision, this.precision);
-
-        let material = new THREE.MeshPhongMaterial();
-        material.map = THREE.ImageUtils.loadTexture('assets/Planets/'+ this.planet.name +'.png');
-        material.bumpMap = THREE.ImageUtils.loadTexture('assets/Planets/'+ this.planet.name +'_Bump.png');
-        material.bumpScale = 10;
-
-        material.specularMap = THREE.ImageUtils.loadTexture('assets/Planets/'+ this.planet.name +'_Specular.png');
-        material.specular = new THREE.Color(0x222222);
-
-        material.polygonOffset = true;
-        material.polygonOffsetFactor = 1;
-        material.polygonOffsetUnits = 1;
-
-        this.mesh = new THREE.Mesh(geometry, material);
-        this.mesh.rotateX(this.planet.tilt);
-
-
-        this.createMeridians();
         
+        this.createPlanet();
+        this.createMeridians();
+        this.createAxis();
+
     }
 
     addToScene(scene:THREE.Scene) {
         scene.add(this.mesh);
+        scene.add(this.meridians);
+
+        scene.add(this.axes[0]);
+        scene.add(this.axes[1]);
+        scene.add(this.axes[2]);
     }
 
     update() {
-        let deltaTime = this.clock.getDelta();
+        let deltaTime = this.globals.delta_Time;
 
         // rotate the planet
         let rotational_speed = (Math.PI*2*deltaTime*this.globals.time_step)/this.planet.spin_rate;
 
-        this.mesh.rotateY(rotational_speed);
-        this.meridians.rotateY(rotational_speed);
+        this.mesh.rotateOnWorldAxis(new THREE.Vector3(0,0,1), rotational_speed);
+        this.meridians.rotateOnWorldAxis(new THREE.Vector3(0,0,1), rotational_speed);
+        this.axes.forEach(function (axis) {
+            axis.rotateOnWorldAxis(new THREE.Vector3(0,0,1), rotational_speed);
+        });
     }
 
     /*
@@ -74,6 +62,28 @@ export class PlanetRenderer {
         return ret;
     }
 
+    private createPlanet() {
+        this.planet = new Planet("Earth", 6371, 86400, 23*(2*Math.PI)/360);
+
+        let geometry = new THREE.SphereGeometry(this.planet.radius, this.precision, this.precision);
+
+        let material = new THREE.MeshPhongMaterial();
+        material.map = THREE.ImageUtils.loadTexture('assets/Planets/'+ this.planet.name +'.png');
+        material.bumpMap = THREE.ImageUtils.loadTexture('assets/Planets/'+ this.planet.name +'_Bump.png');
+        material.bumpScale = 10;
+
+        material.specularMap = THREE.ImageUtils.loadTexture('assets/Planets/'+ this.planet.name +'_Specular.png');
+        material.specular = new THREE.Color(0x222222);
+
+        material.polygonOffset = true;
+        material.polygonOffsetFactor = 1;
+        material.polygonOffsetUnits = 1;
+
+        this.mesh = new THREE.Mesh(geometry, material);
+        this.mesh.rotateY(Math.PI);
+        this.mesh.rotateX(-Math.PI/2);
+    }
+
     private createMeridians() {
         let geometry = new THREE.Geometry();
 
@@ -81,7 +91,11 @@ export class PlanetRenderer {
             color: 0xff0000
         } );
     
+        // How high the meridian lines will be drawn.
         let attitude = this.planet.radius + 100;
+
+        // How often a line should be drawn. This is measured in degrees (longitude and latitude)
+        // Make sure this is a divisor of 360
         let precision = 15;
 
         // Latitudes at 15 degree increments
@@ -116,10 +130,21 @@ export class PlanetRenderer {
                 geometry.vertices.push(new THREE.Vector3(x,height,z));  
             }
         }
-        
 
         this.meridians = new THREE.Line(geometry, matLine);
-        this.meridians.rotateX(this.planet.tilt);
+        this.meridians.rotateY(Math.PI);
+        this.meridians.rotateX(-Math.PI/2);
+        //this.meridians.rotateX(this.planet.tilt);
+    }
+
+    private createAxis() {
+        let axis_size = this.planet.radius * 1.15;
+        let head_size = axis_size / 20;
+        let head_width = head_size / 2;
+
+        this.axes[0] = new THREE.ArrowHelper(new THREE.Vector3(1,0,0), new THREE.Vector3(0,0,0), axis_size, 0xff0000, head_size, head_width);
+        this.axes[1] = new THREE.ArrowHelper(new THREE.Vector3(0,1,0), new THREE.Vector3(0,0,0), axis_size, 0x00ff00, head_size, head_width);
+        this.axes[2] = new THREE.ArrowHelper(new THREE.Vector3(0,0,1), new THREE.Vector3(0,0,0), axis_size, 0x0000ff, head_size, head_width);
     }
 
     toggle:boolean = false;
